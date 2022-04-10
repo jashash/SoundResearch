@@ -14,6 +14,20 @@ def rec_audio(frames, which_device, storage_array, channel):
     sd.wait()
     storage_array.put(data)
 
+
+def shift(arr, num, fill_value):
+    result = np.empty_like(arr)
+    if num > 0:
+        result[:num] = fill_value
+        result[num:] = arr[:-num]
+    elif num < 0:
+        result[num:] = fill_value
+        result[:num] = arr[-num:]
+    else:
+        result[:] = arr
+    return result
+
+
 if __name__ == '__main__':
     #mp.set_start_method('fork')
     recordings = mp.Queue()
@@ -92,40 +106,65 @@ if __name__ == '__main__':
     #
     plt.show()
 
-    plt.title("Channel 1 With Noise")
-    plt.plot(new_signal[:, 0], color="red")
+    handheldRecArray[:, 1] = shift(handheldRecArray[:, 1], sampleRate, 0)
+
+    # plt.title("Channel 1 With Noise")
+    # plt.plot(new_signal[:, 0], color="red")
+    # #
+    # plt.show()
+    #
+    # plt.title("Channel 2 With noise")
+    # plt.plot(new_signal[:, 1], color="red")
+    # #
+    # plt.show()
+    #
+    # plt.title("Channel 1 With Noise")
+    # plt.plot(new_signal2[:, 0], color="red")
+    # #
+    # plt.show()
+    #
+    # plt.title("Channel 2 With noise")
+    # plt.plot(new_signal2[:, 1], color="red")
+    # #
+    # plt.show()
+    #
+    # plt.title("Channel 1 With Noise")
+    # plt.plot(new_signal3[:, 0], color="red")
+    # #
+    # plt.show()
+    #
+    # plt.title("Channel 2 With noise")
+    # plt.plot(new_signal3[:, 1], color="red")
+    # #
+    # plt.show()
+
+    beginInterest = 0
+    while handheldRecArray[beginInterest, 0] <= 0.01 and handheldRecArray[beginInterest, 1] <= 0.01:
+        beginInterest += 1
+
+    if beginInterest < 10000:
+        beginInterest = 0
+    else:
+        beginInterest -= 10000
+
+    endInterest = int(seconds * sampleRate)
+    while handheldRecArray[endInterest - 1, 0] <= 0.01 and handheldRecArray[endInterest - 1, 1]:
+        endInterest -= 1
+
+    if endInterest > int(seconds * sampleRate) - 10000:
+        endInterest = int(seconds * sampleRate)
+    else:
+        endInterest += 10000
+
+    plt.title("Channel 1 No noise")
+    plt.plot(handheldRecArray[beginInterest:endInterest, 0], color="red")
     #
     plt.show()
 
-    plt.title("Channel 2 With noise")
-    plt.plot(new_signal[:, 1], color="red")
+    plt.title("Channel 2 No noise")
+    plt.plot(handheldRecArray[beginInterest:endInterest, 1], color="red")
     #
     plt.show()
-
-    plt.title("Channel 1 With Noise")
-    plt.plot(new_signal2[:, 0], color="red")
-    #
-    plt.show()
-
-    plt.title("Channel 2 With noise")
-    plt.plot(new_signal2[:, 1], color="red")
-    #
-    plt.show()
-
-    plt.title("Channel 1 With Noise")
-    plt.plot(new_signal3[:, 0], color="red")
-    #
-    plt.show()
-
-    plt.title("Channel 2 With noise")
-    plt.plot(new_signal3[:, 1], color="red")
-    #
-    plt.show()
-
-    #ii = 0
-    #while handheldRecArray[:, 0] <= 0.01:
-        #ii += 1
-
     # shiftFactor = int(newArray.size/5)
     # newArray.resize(newArray.size + shiftFactor)
     # newArray = np.roll(newArray, shiftFactor)
